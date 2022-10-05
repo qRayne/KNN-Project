@@ -1,0 +1,6 @@
+3 formules :
+
+
+1) c = A / P2  ou A = aire et p2 = perimètre au carré
+2) r = Apc / Agc ou Apc = aire du grand cercle et aire du petit cercle
+3) s = somme(max(plusgrandedistance))(zone de transition) ou max(plusgrandedistance) = frequence du plusgrandedistance dans le la matrice de distances
