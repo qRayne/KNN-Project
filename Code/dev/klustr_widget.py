@@ -49,7 +49,6 @@ from PySide6.QtGui import  (QImage, QPixmap, QIcon, QPainter, QFont, QPen, QBrus
 from __feature__ import snake_case, true_property 
 
 
-
 #     ___  _       _ _                          __                      _      _     
 #    / _ \| |_    (_) |_ ___ _ __ ___  ___     / /  _ __ ___   ___   __| | ___| |___ 
 #   | | | | __|   | | __/ _ \ '_ ` _ \/ __|   / /  | '_ ` _ \ / _ \ / _` |/ _ \ / __|
@@ -369,7 +368,6 @@ class KlustRImageInfoWidget(QWidget):
         self.translated_widget.brush = QBrush(self.green_color) if image_item.translated else QBrush(self.red_color)
         self.rotated_widget.brush = QBrush(self.green_color) if image_item.rotated else QBrush(self.red_color)
         self.scaled_widget.brush = QBrush(self.green_color) if image_item.scaled else QBrush(self.red_color)
-
 
 
 #    _  ___           _   ____  ____        _        ____                         __     ___              __        ___     _            _   
