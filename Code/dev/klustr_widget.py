@@ -564,7 +564,7 @@ class KlustRDataSourceViewWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    credential = PostgreSQLCredential(host='jcd-prof-cvm-69b5.aivencloud.com', port=11702, database='data_kit', user='klustr_reader', password='h$2%1?')
+    credential = PostgreSQLCredential(host='localhost', port=5432, database='postgres', user='postgres', password='AAAaaa123')
     klustr_dao = PostgreSQLKlustRDAO(credential)
     source_data_widget = KlustRDataSourceViewWidget(klustr_dao)
     source_data_widget.show()
