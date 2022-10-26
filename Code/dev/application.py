@@ -1,5 +1,4 @@
 import sys
-<<<<<<< HEAD
 from tkinter import HORIZONTAL
 
 import numpy as np
@@ -12,10 +11,6 @@ from cgitb import text
 from email.mime import image
 from turtle import right, st
 from PySide6 import QtGui, QtWidgets
-=======
-from tkinter import CENTER, HORIZONTAL
-from PySide6 import QtCore, QtGui, QtWidgets
->>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
@@ -195,7 +190,6 @@ class myApp(QtWidgets.QMainWindow):
 
         # ------------------------------------------ GAME KNN  ---------------------------------------#    
 
-<<<<<<< HEAD
         
         self.__data1 = MyData(100)
         self.__data2 = MyData(100)
@@ -214,12 +208,10 @@ class myApp(QtWidgets.QMainWindow):
 
         
         
-=======
         self.__knn_view = QLabel("KNN")
-        self.__knn_view.set_fixed_width(600)
-        self.__knn_view.set_fixed_height(600)
+        self.__knn_view.setFixedWidth(600)
+        self.__knn_view.setFixedHeight(600)
         self.__knn_view.alignment = Qt.AlignCenter
->>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
         
 
         # ------------------------------------------ GLOBAL ---------------------------------------#    
@@ -236,16 +228,9 @@ class myApp(QtWidgets.QMainWindow):
         self.__Knn_box.addWidget(Knn_widget)
         
         self.__principal_box = QHBoxLayout()
-<<<<<<< HEAD
         self.__principal_box.addLayout(self.__setting_box)
         self.__principal_box.addLayout(self.__Knn_box)
         
-=======
-        self.__principal_box.add_layout(self.__setting_box)
-        self.__principal_box.add_layout(self.__Knn_box)
-
-        self.set_window_title('KNN Image Classification')
->>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
 
         centrale_widget = QWidget()
         centrale_widget.setLayout(self.__principal_box)
