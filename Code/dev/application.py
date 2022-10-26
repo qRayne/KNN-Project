@@ -1,4 +1,5 @@
 import sys
+<<<<<<< HEAD
 from tkinter import HORIZONTAL
 
 import numpy as np
@@ -11,6 +12,10 @@ from cgitb import text
 from email.mime import image
 from turtle import right, st
 from PySide6 import QtGui, QtWidgets
+=======
+from tkinter import CENTER, HORIZONTAL
+from PySide6 import QtCore, QtGui, QtWidgets
+>>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
@@ -76,14 +81,14 @@ class myApp(QtWidgets.QMainWindow):
         
         
         # Dataset - included in dataset
-        self.__included_in_dataset_box = QtWidgets.QGroupBox('included in dataset')
+        self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
         
         self.__categorie_info = QLabel('Category count:      9')
-        self.__trainning_info = QLabel('Trainning image count:     126')
-        self.__test_image_info = QLabel('Test images count:     189')
-        self.__totale_image_info = QLabel('Total images count:     315')
+        self.__trainning_info = QLabel('Training image count:     126')
+        self.__test_image_info = QLabel('Test image count:     189')
+        self.__totale_image_info = QLabel('Total image count:     315')
         
         self.__included_in_dataset_layout.addWidget(self.__categorie_info)
         self.__included_in_dataset_layout.addWidget(self.__trainning_info)
@@ -98,8 +103,8 @@ class myApp(QtWidgets.QMainWindow):
         self.__transformation_layout = QVBoxLayout()
 
         self.__translated_info = QLabel('Translated:    true')
-        self.__rotaded_info = QLabel('rotaded:     true')
-        self.__scladed_info = QLabel('scladed:      true')
+        self.__rotaded_info = QLabel('Rotated:     true')
+        self.__scladed_info = QLabel('Scaled:      true')
         
         self.__transformation_layout.addWidget(self.__translated_info)
         self.__transformation_layout.addWidget(self.__rotaded_info)
@@ -165,7 +170,7 @@ class myApp(QtWidgets.QMainWindow):
         
         # ---------------------------- (KNN parametre) - Global menu --------------------------------#    
 
-        self.__group_knn_parameters = QtWidgets.QGroupBox('Knn parameters')
+        self.__group_knn_parameters = QtWidgets.QGroupBox('KNN parameters')
         self.__knn_scrollbar = QtWidgets.QScrollBar()
         self.__max_scrollbar = QtWidgets.QScrollBar() 
         self.__parametre_info_layout = QVBoxLayout()
@@ -190,6 +195,7 @@ class myApp(QtWidgets.QMainWindow):
 
         # ------------------------------------------ GAME KNN  ---------------------------------------#    
 
+<<<<<<< HEAD
         
         self.__data1 = MyData(100)
         self.__data2 = MyData(100)
@@ -208,6 +214,12 @@ class myApp(QtWidgets.QMainWindow):
 
         
         
+=======
+        self.__knn_view = QLabel("KNN")
+        self.__knn_view.set_fixed_width(600)
+        self.__knn_view.set_fixed_height(600)
+        self.__knn_view.alignment = Qt.AlignCenter
+>>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
         
 
         # ------------------------------------------ GLOBAL ---------------------------------------#    
@@ -224,9 +236,16 @@ class myApp(QtWidgets.QMainWindow):
         self.__Knn_box.addWidget(Knn_widget)
         
         self.__principal_box = QHBoxLayout()
+<<<<<<< HEAD
         self.__principal_box.addLayout(self.__setting_box)
         self.__principal_box.addLayout(self.__Knn_box)
         
+=======
+        self.__principal_box.add_layout(self.__setting_box)
+        self.__principal_box.add_layout(self.__Knn_box)
+
+        self.set_window_title('KNN Image Classification')
+>>>>>>> 8344ad27a9df4e00d8c5a8f88286a45a33cce979
 
         centrale_widget = QWidget()
         centrale_widget.setLayout(self.__principal_box)
