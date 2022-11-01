@@ -72,7 +72,6 @@ class myApp(QtWidgets.QMainWindow):
         # ---------------------------- (Dataset) - Global menu--------------------------------#
         self.__group_data_set = QtWidgets.QGroupBox('Dataset')
         
-        
         # Dataset - list deroulante
         self.__menu_list_data_layout = QVBoxLayout()
         self.__menu_data_list = QtWidgets.QComboBox()
@@ -282,16 +281,15 @@ class myApp(QtWidgets.QMainWindow):
         
         cur.execute("SELECT name FROM klustr.available_datasets();")
         print(cur.description)
-
+        
         value = cur.fetchone()
         print(f'one > {value}')
-
-
+        
+        #print(values)
         for i, emp in enumerate(cur):
             print(f'{i:03} | {emp}')
-    
-        
-
+            self.__menu_data_list.addItem(str(emp))
+            
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
