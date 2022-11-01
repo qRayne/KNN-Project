@@ -10,29 +10,36 @@ import klustr_utils
 
 
 class KNN:
-    def __init__(self,arrayMetrique,metriqueImageTest,nbVoisins,dimension,imageTest):
-       self.__nbVoisins = nbVoisins
-       self.__imageTest = self.conversion_png_ndarray(imageTest) # on converti l'image qu'on a 
-       self.data_training = np.empty((0, dimension), dtype=np.float64) 
-       self.__metriqueImageTest = metriqueImageTest
-       self.__arrayMetrique = arrayMetrique
+    def __init__(self,nb_voisins,dimension,image_test):
+       self.__nb_voisins = nb_voisins
+       self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
+       self.__data_training = np.empty((0, dimension), dtype=np.float64)  #[x,y,z, image], [x,y,z, image]
+       self.__metrique_image_test = np.empty((0,dimension), dtype=np.float64) #[x,y,z]
+       
+       
+    # ------------------------------------------ EXPLICATION ---------------------------------------#    
+    # Lorsqu'on va creer un knn on va lui passer en paramètre la dimension, le nombre de voisins et l'image test
+    # l'image test va être directement converti en png_ndarray
+    # avec l'image on pourra calculer chacune des metrique qu'on mettra dans un tableau [x,y,z]
+    # et ce tableau on l'ajoutera dans notre data_training avec un tag pour dire le nom de l'image et ses metriques
+    # nos metriques sont : la 
+       
        
     
     @property
-    def imageTest(self):
+    def data_training(self):
+        return self.__data_training
+    @property
+    def image_test(self):
         return self.__imageTest
     
     @property
-    def nbVoisins(self):
+    def nb_voisins(self):
          return self.__nbVoisins
      
     @property
-    def metriqueImageTest(self):
+    def metrique_image_test(self):
          return self.__metriqueImageTest
-     
-    @property
-    def arrayMetrique(self):
-         return self.__arrayMetrique
 
     # Conversion png to ndarray
     # prend en paramètre une image.png et la transforme de png->qimage et qimage ->ndarray
@@ -41,25 +48,25 @@ class KNN:
         arrayBinary = klustr_utils.ndarray_from_qimage_argb32(qImage)
         return arrayBinary
 
-    def aireForme(self,dataImage):
-        return np.sum(np.count_nonzero(dataImage))
+    def aire_forme(self,data_image):
+        return np.sum(np.count_nonzero(data_image))
     
-    def perimetreForme(self,dataImage):
+    def perimetre_forme(self,data_image):
         # le deuxième data dans le tupe (-1, n ) ou n est le nombre de colonnes
-        return np.sum(dataImage[:,1:] != dataImage[:,:-1]) + np.sum(dataImage[1:,:] != dataImage[:-1,:])
+        return np.sum(data_image[:,1:] != data_image[:,:-1]) + np.sum(data_image[1:,:] != data_image[:-1,:])
 
-    def centroideForme(self,dataImage):
-        c, r = np.meshgrid(np.arange(dataImage.shape[1]), np.arange(dataImage.shape[0]))
-        return (np.sum(r * dataImage), np.sum(c * dataImage)) / self.aireForme(dataImage)
+    def centroide_forme(self,data_image):
+        c, r = np.meshgrid(np.arange(data_image.shape[1]), np.arange(data_image.shape[0]))
+        return (np.sum(r * data_image), np.sum(c * data_image)) / self.aireForme(data_image)
 
     #  on trouve le contour de l'image grâce à l'aire de l'image et son perimètre 
-    def trouverContourFormeImage(self,dataImage):
-        return self.aireForme(dataImage) / self.perimetreForme(dataImage) ** 2
+    def calcul_complexite(self,data_image):
+        return self.aireForme(data_image) / self.perimetre_forme(data_image) ** 2
     
-    def trouverRatioImage(self,dataImage):
+    def calcul_ratio_image(self,data_image):
         pass
     
-    def trouverNbSommets(self,dataImage):
+    def calcul_nb_sommets(self,data_image):
         pass
         
     

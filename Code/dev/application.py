@@ -189,6 +189,8 @@ class myApp(QtWidgets.QMainWindow):
         # ------------------------------------------ About ---------------------------------------#    
         self.__about_button_layout = QVBoxLayout()
         self.__about_button = QtWidgets.QPushButton('About')
+        self.__about_button.clicked.connect(self.popup_about)
+        
         
 
         # ------------------------------------------ GAME KNN  ---------------------------------------#    
@@ -289,6 +291,35 @@ class myApp(QtWidgets.QMainWindow):
         for i, emp in enumerate(cur):
             print(f'{i:03} | {emp}')
             self.__menu_data_list.addItem(str(emp))
+            
+    def popup_about(self):
+        about_text = """Ce logiciel est le premier projet du cours C52
+        
+                        Il a été réalisé par :
+                          - Kevin Gbeti
+                          - Lemar Andar
+                          - Elyas Kaouah
+                          - Rayane Rachid Kennaf
+                          
+                        Il consiste à executer l'algorithme KNN avec les concepts suivants:
+                          - Le calcul de distance entre un point et ses voisins.
+                          - Prendre le nombre k de voisins, en fait la moyenne et détermine la classe d'image à laquelle l'image test appartient. 
+                          
+                        Nos 3 descripteurs de forme sont :
+                          - 
+                             - 
+                          - 
+                             - 
+                          - 
+                             - 
+                             
+                        Plus précisément, ce laboratoire permet de mettre en pratique les notions de :
+                          - Matplotlib
+                          - Numpy
+                          - DataBase(pgAdmin - posgresql)
+                          - PyQt_Pyside6
+                        """
+        QtWidgets.QMessageBox.about(self,"KlustR Knn Classifier",about_text)
             
 def main():
     app = QtWidgets.QApplication(sys.argv)
