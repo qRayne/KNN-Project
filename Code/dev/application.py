@@ -1,3 +1,4 @@
+from sqlite3 import connect
 import sys
 from tkinter import HORIZONTAL
 
@@ -13,6 +14,9 @@ from turtle import right, st
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
+
+
+import psycopg2
 
 
 class MyData:
@@ -234,6 +238,7 @@ class myApp(QtWidgets.QMainWindow):
 
         centrale_widget = QWidget()
         centrale_widget.setLayout(self.__principal_box)
+        self.getconnection()
         self.setCentralWidget(centrale_widget)
       
     def __create_channel(self, text, scroll, width, range):
@@ -255,6 +260,38 @@ class myApp(QtWidgets.QMainWindow):
         layout.addWidget(scroll)
        
         return layout
+    
+    def getconnection(self):
+        try:
+            conn = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
+    
+        except psycopg2.Error as e:
+            print("Unable to connect!", e.pgerror, e.diag.message_detail)
+                
+        else:
+            print("Connected!!!")
+            
+            cur = conn.cursor()
+        
+            cur.execute("SELECT * FROM klustr.available_datasets();")
+            print(cur.description)
+
+            value = cur.fetchone()
+            print(f'one > {value}')
+
+
+            for i, emp in enumerate(cur):
+                print(f'{i:03} | {emp}')
+                
+            conn.close()
+
+        pass
+        
+
+
+
+
+
         
     
 def main():
@@ -262,6 +299,7 @@ def main():
 
     w = myApp()
     w.show()
+    
     sys.exit(app.exec())
     
 
