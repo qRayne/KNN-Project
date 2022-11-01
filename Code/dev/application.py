@@ -263,37 +263,35 @@ class myApp(QtWidgets.QMainWindow):
     
     def getconnection(self):
         try:
-            conn = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
+            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
     
         except psycopg2.Error as e:
             print("Unable to connect!", e.pgerror, e.diag.message_detail)
                 
         else:
             print("Connected!!!")
-            
-            cur = conn.cursor()
-        
-            cur.execute("SELECT * FROM klustr.available_datasets();")
-            print(cur.description)
-
-            value = cur.fetchone()
-            print(f'one > {value}')
-
-
-            for i, emp in enumerate(cur):
-                print(f'{i:03} | {emp}')
-                
-            conn.close()
+            self.update(connection)
+           
+            connection.close()
 
         pass
         
-
-
-
-
-
+    def update(self,connection):
+       
+        cur = connection.cursor()
         
+        cur.execute("SELECT name FROM klustr.available_datasets();")
+        print(cur.description)
+
+        value = cur.fetchone()
+        print(f'one > {value}')
+
+
+        for i, emp in enumerate(cur):
+            print(f'{i:03} | {emp}')
     
+        
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
