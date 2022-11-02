@@ -12,8 +12,7 @@ import math
 
 
 class KNN:
-    #  def __init__(self,nb_voisins,dimension,image_test):
-    def __init__(self,nb_voisins,dimension,image_test):
+    def __init__(self,dimension,image_test,nb_voisins=3):
        self.__nb_voisins = nb_voisins
        self.__image_test = image_test
        #self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
@@ -26,11 +25,11 @@ class KNN:
     
     @property
     def image_test(self):
-        return self.image_test
+        return self.__image_test
     
     @property
     def nb_voisins(self):
-         return self.nb_voisins
+         return self.__nb_voisins
      
     @property
     def metrique_image_test(self):
@@ -85,7 +84,27 @@ class KNN:
         
         distancePointsEnNumpy = np.array(distancePoints)
         # retourne le ratio entre la distance min / distance max
-        return np.amin(distancePointsEnNumpy) / np.amax(distancePointsEnNumpy)     
+        return np.amin(distancePointsEnNumpy) / np.amax(distancePointsEnNumpy)
+    
+    def ajouter_metriques_image_test(self):
+        nbDim = self.metrique_image_test.shape[1]
+        
+        # si la dimension est de 1 -> une seule metrique (x)
+        # si la dimension est de 2 -> deux  metrique (x,y)
+        # si la dimension est de 3 -> trois  metrique (x,y,z)
+        
+        if nbDim == 1:
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
+        elif nbDim == 2:
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_image(self.__image_test))
+        else:
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_image(self.__image_test))
+            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_distance_image(self.__image_test))
+            
+    def calculer_distance_image_test_dataset(self):
+        pass 
     
         
 def main():
@@ -104,14 +123,16 @@ def main():
     carreNumpy = np.array(carre)
     carreNumpy.flatten()
     
-    knn_engine = KNN(3,3,carreNumpy)
-    
-    print (f" aire du carré : {knn_engine.aire_forme(carreNumpy)}")
-    print (f" permietre du carré : {knn_engine.perimetre_forme(carreNumpy)}")
-    print (f" centroide du carré : {knn_engine.centroide_forme(carreNumpy)}")
-    print (f" complexité du carré : {knn_engine.calcul_complexite(carreNumpy)}")
-    print (f" ratio de circularité du carré : {knn_engine.calcul_ratio_image(carreNumpy)}")
-    print (f" ratio de distance du carré : {knn_engine.calcul_ratio_distance_image(carreNumpy)}")
+    knn_engine = KNN(3,carreNumpy)
+    knn_engine.ajouter_metriques_image_test()
+
+    print (f" aire du carré : {knn_engine.aire_forme(knn_engine.image_test)}")
+    print (f" permietre du carré : {knn_engine.perimetre_forme(knn_engine.image_test)}")
+    print (f" centroide du carré : {knn_engine.centroide_forme(knn_engine.image_test)}")
+    print (f" complexité du carré : {knn_engine.calcul_complexite(knn_engine.image_test)}")
+    print (f" ratio de circularité du carré : {knn_engine.calcul_ratio_image(knn_engine.image_test)}")
+    print (f" ratio de distance du carré : {knn_engine.calcul_ratio_distance_image(knn_engine.image_test)}")
+    print (f" les metriques de l'image test : { knn_engine.metrique_image_test}")
 
 
 if __name__ == '__main__':
