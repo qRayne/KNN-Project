@@ -1,3 +1,4 @@
+from multiprocessing import connection
 from sqlite3 import connect
 import sys
 
@@ -263,13 +264,15 @@ class myApp(QtWidgets.QMainWindow):
     # prend le label et la valeur et l'affiche ensemble
     def __text_tgt(self, text, value):
         title = QLabel(text)
-        info = QLabel(value)
+        self.__info = QLabel(value)
         layout = QHBoxLayout()
 
         layout.addWidget(title)
-        layout.addWidget(info)
+        layout.addWidget(self.__info)
 
-        return layout        
+        return layout     
+    
+       
     
     def getconnection(self):
         try:
@@ -282,12 +285,14 @@ class myApp(QtWidgets.QMainWindow):
             print("Connected!!!")
             self.update(connection)
             
-            connection.close()
+            #connection.close()
+            return connection
         pass
         
     def update(self,connection):
         self.cur = connection.cursor()
         self.cur.execute("SELECT name FROM klustr.data_set_info;")
+        value = self.cur.fetchone()
         
         # value = self.cur.fetchone()
         # self.valeur = QLabel()
@@ -295,34 +300,31 @@ class myApp(QtWidgets.QMainWindow):
         
         for i, emp in enumerate(self.cur):
             # print(f'{i:03} | {emp}')
-            self.__menu_data_list.addItem(str(emp))
-            # self.id = emp[0]
-        # self.__menu_data_list.currentIndexChanged.connect(self.selected)
-        # doc.setHtml(self.valeur.text())
-        # text = doc.toPlainText
-        # self.selected(text)
+            self.__menu_data_list.addItem(emp[0])
+           
+        
+        self.__menu_data_list.currentIndexChanged.connect(self.selected)
+       
 
     # prend l'id selectionnée et SELECT la table appropriée
     # tente de remplir les valeurs
     @Slot()
-    def selected(self, id):
-        # int
-        self.__categorie_info = self.fill_values("label_count", id)
-        self.__training_info = self.fill_values("training_image_count", id)
-        self.__test_image_info = self.fill_values("test_image_count", id)
-        self.__totale_image_info = self.fill_values("total_image_count", id)
-
-        # String
-        # self.rotated = self.fill_values("rotated", id)
-        # self.translated = self.fill_values("translated", id)
-        # self.scaled = self.fill_values("scaled", id)
+    def selected(self):
+        text = self.__menu_data_list.currentText()
+        print(text)
+        self.cur = self.getconnection().cursor()
+        self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (text,))
+        value = self.cur.fetchone()
+       
+        self.__translated_info.setText("ddd")
+        print(value[0])
+        
+        
+    
+    
 
     # execute commande SQL pour afficher les infos spécifique 
-    def fill_values(self, col, id):
-        self.cur.execute("SELECT %s FROM klustr.data_set_info WHERE id = %s", (col, id))
-        self.cur.fetchone()
-        return self.cur
-
+   
     def popup_about(self):
         about_text = """Ce logiciel est le premier projet du cours C52
         
