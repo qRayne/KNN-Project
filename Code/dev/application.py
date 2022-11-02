@@ -108,9 +108,9 @@ class myApp(QtWidgets.QMainWindow):
         self.__rotated_text = 'Rotated: '
         self.__scaled_text = 'Scaled: '
 
-        self.__translated_info = QLabel()
-        self.__rotated_info = QLabel()
-        self.__scaled_info = QLabel()
+        self.__translated_info = QLabel("0")
+        self.__rotated_info = QLabel("0")
+        self.__scaled_info = QLabel("0")
 
         self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
         self.rotated = self.__text_tgt(self.__rotated_text, self.__rotated_info)
@@ -122,11 +122,11 @@ class myApp(QtWidgets.QMainWindow):
          
         self.__transformation_box.setLayout(self.__transformation_layout)
         
-        central_layout_data = QVBoxLayout()
-        central_layout_data.addLayout(self.__menu_list_data_layout)
-        central_layout_data.addWidget(self.__included_in_dataset_box)
-        central_layout_data.addWidget(self.__transformation_box)
-        self.__group_data_set.setLayout(central_layout_data)
+        self.__central_layout_data = QVBoxLayout()
+        self.__central_layout_data.addLayout(self.__menu_list_data_layout)
+        self.__central_layout_data.addWidget(self.__included_in_dataset_box)
+        self.__central_layout_data.addWidget(self.__transformation_box)
+        self.__group_data_set.setLayout(self.__central_layout_data)
  
 
         # ---------------------------- (single test) - Global menu --------------------------------#    
@@ -262,13 +262,14 @@ class myApp(QtWidgets.QMainWindow):
         return layout
 
     # prend le label et la valeur et l'affiche ensemble
-    def __text_tgt(self, text, value):
+    def __text_tgt(self, text, ok):
         title = QLabel(text)
-        self.__info = QLabel(value)
+        value = ok
+       
+        
         layout = QHBoxLayout()
-
         layout.addWidget(title)
-        layout.addWidget(self.__info)
+        layout.addWidget(value)
 
         return layout     
     
@@ -315,9 +316,25 @@ class myApp(QtWidgets.QMainWindow):
         self.cur = self.getconnection().cursor()
         self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (text,))
         value = self.cur.fetchone()
+        
+        self.__transformation_layout.removeItem(self.translated)
+        self.__transformation_layout.removeItem(self.rotated)
+        self.__transformation_layout.removeItem(self.scaled)
+        
+        self.__translated_info.setText(str(value[2])) # translated
+        
+        self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
+        self.__transformation_layout.addLayout(self.translated)
+        self.__transformation_box.setLayout(self.__transformation_layout)
+        
+        self.__central_layout_data.addWidget(self.__transformation_box)
+        self.__group_data_set.setLayout(self.__central_layout_data)
        
-        self.__translated_info.setText("ddd")
-        print(value[0])
+        
+        
+        
+        print(value)
+        
         
         
     
