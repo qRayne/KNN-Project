@@ -1,16 +1,11 @@
 from sqlite3 import connect
 import sys
-from tkinter import HORIZONTAL
 
 import numpy as np
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
-
-from cgitb import text
-from email.mime import image
-from turtle import right, st
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
@@ -77,41 +72,54 @@ class myApp(QtWidgets.QMainWindow):
         self.__menu_data_list = QtWidgets.QComboBox()
         self.__menu_list_data_layout.addWidget(self.__menu_data_list)
         
-        
         # Dataset - included in dataset
         self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
+        self.__categorie_text = 'Category count: '
+        self.__training_text = 'Training image count: '
+        self.__test_image_text = 'Test image count: '
+        self.__totale_image_text = 'Total image count: '
+
+        self.__categorie_info = QLabel()
+        self.__training_info = QLabel()
+        self.__test_image_info = QLabel()
+        self.__totale_image_info = QLabel()
+
+        self.cat_count = self.__text_tgt(self.__categorie_text, self.__categorie_info)
+        self.train_count = self.__text_tgt(self.__training_text, self.__training_info)
+        self.test_count = self.__text_tgt(self.__test_image_text, self.__test_image_info)
+        self.totale_count = self.__text_tgt(self.__totale_image_text, self.__totale_image_info)
+
         
-        self.__categorie_info = QLabel('Category count:      9')
-        self.__trainning_info = QLabel('Training image count:     126')
-        self.__test_image_info = QLabel('Test image count:     189')
-        self.__totale_image_info = QLabel('Total image count:     315')
-        
-        self.__included_in_dataset_layout.addWidget(self.__categorie_info)
-        self.__included_in_dataset_layout.addWidget(self.__trainning_info)
-        self.__included_in_dataset_layout.addWidget(self.__test_image_info)
-        self.__included_in_dataset_layout.addWidget(self.__totale_image_info)
+        self.__included_in_dataset_layout.addLayout(self.cat_count)
+        self.__included_in_dataset_layout.addLayout(self.train_count)
+        self.__included_in_dataset_layout.addLayout(self.test_count)
+        self.__included_in_dataset_layout.addLayout(self.totale_count)
         
         self.__included_in_dataset_box.setLayout(self.__included_in_dataset_layout)
        
-        
         # Dataset - transformation
         self.__transformation_box = QtWidgets.QGroupBox('Transformation')
         self.__transformation_layout = QVBoxLayout()
 
-        self.__translated_info = QLabel('Translated:    true')
-        self.__rotaded_info = QLabel('Rotated:     true')
-        self.__scladed_info = QLabel('Scaled:      true')
+        self.__translated_text = 'Translated: '
+        self.__rotated_text = 'Rotated: '
+        self.__scaled_text = 'Scaled: '
+
+        self.__translated_info = QLabel()
+        self.__rotated_info = QLabel()
+        self.__scaled_info = QLabel()
+
+        self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
+        self.rotated = self.__text_tgt(self.__rotated_text, self.__rotated_info)
+        self.scaled = self.__text_tgt(self.__scaled_text, self.__scaled_info)
         
-        self.__transformation_layout.addWidget(self.__translated_info)
-        self.__transformation_layout.addWidget(self.__rotaded_info)
-        self.__transformation_layout.addWidget(self.__scladed_info)
+        self.__transformation_layout.addLayout(self.translated)
+        self.__transformation_layout.addLayout(self.rotated)
+        self.__transformation_layout.addLayout(self.scaled)
          
-        
         self.__transformation_box.setLayout(self.__transformation_layout)
-        
-        
         
         central_layout_data = QVBoxLayout()
         central_layout_data.addLayout(self.__menu_list_data_layout)
@@ -162,8 +170,6 @@ class myApp(QtWidgets.QMainWindow):
         central_layout_single.addLayout(self.__classify_button_layout)
         central_layout_single.addLayout(self.__classify_info_layout)
         self.__group_single_test.setLayout(central_layout_single)
-        
-        
     
         
         # ---------------------------- (KNN parametre) - Global menu --------------------------------#    
@@ -172,10 +178,9 @@ class myApp(QtWidgets.QMainWindow):
         self.__knn_scrollbar = QtWidgets.QScrollBar()
         self.__max_scrollbar = QtWidgets.QScrollBar() 
         self.__parametre_info_layout = QVBoxLayout()
-
     
-        scroll_1_layout = self.__create_channel('K =', self.__knn_scrollbar,125, 3)
-        scroll_2_layout = self.__create_channel('Max dist =', self.__max_scrollbar,125,100)
+        scroll_1_layout = self.__create_channel('K =', self.__knn_scrollbar, 125, 3)
+        scroll_2_layout = self.__create_channel('Max dist =', self.__max_scrollbar, 125, 100)
 
         self.__parametre_info_layout.addLayout(scroll_1_layout)
         self.__parametre_info_layout.addLayout(scroll_2_layout)
@@ -191,11 +196,7 @@ class myApp(QtWidgets.QMainWindow):
         self.__about_button = QtWidgets.QPushButton('About')
         self.__about_button.clicked.connect(self.popup_about)
         
-        
-
         # ------------------------------------------ GAME KNN  ---------------------------------------#    
-
-        
         self.__data1 = MyData(100)
         self.__data2 = MyData(100)
         self.__data1.randomize_normal(-2.5, 1.5)
@@ -211,8 +212,6 @@ class myApp(QtWidgets.QMainWindow):
         central_Knn_layout.addWidget(self.__scatter.widget)
         central_Knn_layout.addWidget(self.__action)
 
-        
-        
         self.__knn_view = QLabel("KNN")
         self.__knn_view.setFixedWidth(600)
         self.__knn_view.setFixedHeight(600)
@@ -220,8 +219,7 @@ class myApp(QtWidgets.QMainWindow):
         
 
         # ------------------------------------------ GLOBAL ---------------------------------------#    
-
-        self.setWindowTitle('Knn Image Classifaction')
+        self.setWindowTitle('KNN Image Classifaction')
         
         self.__setting_box = QVBoxLayout()
         self.__setting_box.addWidget(self.__group_data_set)
@@ -261,6 +259,17 @@ class myApp(QtWidgets.QMainWindow):
         layout.addWidget(scroll)
        
         return layout
+
+    # prend le label et la valeur et l'affiche ensemble
+    def __text_tgt(self, text, value):
+        title = QLabel(text)
+        info = QLabel(value)
+        layout = QHBoxLayout()
+
+        layout.addWidget(title)
+        layout.addWidget(info)
+
+        return layout        
     
     def getconnection(self):
         try:
@@ -272,54 +281,75 @@ class myApp(QtWidgets.QMainWindow):
         else:
             print("Connected!!!")
             self.update(connection)
-           
+            
             connection.close()
-
         pass
         
     def update(self,connection):
-       
-        cur = connection.cursor()
+        self.cur = connection.cursor()
+        self.cur.execute("SELECT name FROM klustr.data_set_info;")
         
-        cur.execute("SELECT name FROM klustr.available_datasets();")
-        print(cur.description)
+        # value = self.cur.fetchone()
+        # self.valeur = QLabel()
+        # doc = QtGui.QTextDocument()
         
-        value = cur.fetchone()
-        print(f'one > {value}')
-        
-        #print(values)
-        for i, emp in enumerate(cur):
-            print(f'{i:03} | {emp}')
+        for i, emp in enumerate(self.cur):
+            # print(f'{i:03} | {emp}')
             self.__menu_data_list.addItem(str(emp))
-            
+            # self.id = emp[0]
+        # self.__menu_data_list.currentIndexChanged.connect(self.selected)
+        # doc.setHtml(self.valeur.text())
+        # text = doc.toPlainText
+        # self.selected(text)
+
+    # prend l'id selectionnée et SELECT la table appropriée
+    # tente de remplir les valeurs
+    @Slot()
+    def selected(self, id):
+        # int
+        self.__categorie_info = self.fill_values("label_count", id)
+        self.__training_info = self.fill_values("training_image_count", id)
+        self.__test_image_info = self.fill_values("test_image_count", id)
+        self.__totale_image_info = self.fill_values("total_image_count", id)
+
+        # String
+        # self.rotated = self.fill_values("rotated", id)
+        # self.translated = self.fill_values("translated", id)
+        # self.scaled = self.fill_values("scaled", id)
+
+    # execute commande SQL pour afficher les infos spécifique 
+    def fill_values(self, col, id):
+        self.cur.execute("SELECT %s FROM klustr.data_set_info WHERE id = %s", (col, id))
+        self.cur.fetchone()
+        return self.cur
+
     def popup_about(self):
         about_text = """Ce logiciel est le premier projet du cours C52
         
-                        Il a été réalisé par :
-                          - Kevin Gbeti
-                          - Lemar Andar
-                          - Elyas Kaouah
-                          - Rayane Rachid Kennaf
-                          
-                        Il consiste à executer l'algorithme KNN avec les concepts suivants:
-                          - Le calcul de distance entre un point et ses voisins.
-                          - Prendre le nombre k de voisins, en fait la moyenne et détermine la classe d'image à laquelle l'image test appartient. 
-                          
-                        Nos 3 descripteurs de forme sont :
-                          - 
-                             - 
-                          - 
-                             - 
-                          - 
-                             - 
-                             
-                        Plus précisément, ce laboratoire permet de mettre en pratique les notions de :
-                          - Matplotlib
-                          - Numpy
-                          - DataBase(pgAdmin - posgresql)
-                          - PyQt_Pyside6
-                        """
-        QtWidgets.QMessageBox.about(self,"KlustR Knn Classifier",about_text)
+        Il a été réalisé par :
+          - Kevin Gbeti
+          - Lemar Andar
+          - Elyas Kaouah
+          - Rayane Rachid Kennaf
+          
+        Il consiste à executer l'algorithme KNN avec les concepts suivants:
+          - Le calcul de distance entre un point et ses voisins.
+          - Prendre le nombre k de voisins, en fait la moyenne et détermine la classe d'image à laquelle l'image test appartient. 
+          
+        Nos 3 descripteurs de forme sont :
+          - 
+             - 
+          - 
+             - 
+          - 
+             - 
+             
+        Plus précisément, ce laboratoire permet de mettre en pratique les notions de :
+          - Matplotlib
+          - Numpy
+          - DataBase(pgAdmin - posgresql)
+          - PyQt_Pyside6 """
+        QtWidgets.QMessageBox.about(self,"KlustR KNN Classifier", about_text)
             
 def main():
     app = QtWidgets.QApplication(sys.argv)
