@@ -77,15 +77,20 @@ class myApp(QtWidgets.QMainWindow):
         self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
+        self.category_number = "";
+        self.training_count_number = "";
+        self.test_image_count_number= "";
+        self.total_image_count_number= "";
+        
         self.__categorie_text = 'Category count: '
         self.__training_text = 'Training image count: '
         self.__test_image_text = 'Test image count: '
         self.__totale_image_text = 'Total image count: '
 
-        self.__categorie_info = QLabel()
-        self.__training_info = QLabel()
-        self.__test_image_info = QLabel()
-        self.__totale_image_info = QLabel()
+        self.__categorie_info = QLabel(self.category_number)
+        self.__training_info = QLabel(self.training_count_number)
+        self.__test_image_info = QLabel(self.test_image_count_number)
+        self.__totale_image_info = QLabel(self.total_image_count_number)
 
         self.cat_count = self.__text_tgt(self.__categorie_text, self.__categorie_info)
         self.train_count = self.__text_tgt(self.__training_text, self.__training_info)
@@ -107,10 +112,15 @@ class myApp(QtWidgets.QMainWindow):
         self.__translated_text = 'Translated: '
         self.__rotated_text = 'Rotated: '
         self.__scaled_text = 'Scaled: '
+        
+        self.translate = "True";
+        self.rotate = "True";
+        self.scale = "True";
+        
 
-        self.__translated_info = QLabel("0")
-        self.__rotated_info = QLabel("0")
-        self.__scaled_info = QLabel("0")
+        self.__translated_info = QLabel(self.translate)
+        self.__rotated_info = QLabel(self.rotate)
+        self.__scaled_info = QLabel(self.scale)
 
         self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
         self.rotated = self.__text_tgt(self.__rotated_text, self.__rotated_info)
@@ -302,6 +312,7 @@ class myApp(QtWidgets.QMainWindow):
         for i, emp in enumerate(self.cur):
             # print(f'{i:03} | {emp}')
             self.__menu_data_list.addItem(emp[0])
+            self.__menu_single_list.addItem(emp[0])
            
         
         self.__menu_data_list.currentIndexChanged.connect(self.selected)
@@ -311,30 +322,47 @@ class myApp(QtWidgets.QMainWindow):
     # tente de remplir les valeurs
     @Slot()
     def selected(self):
-        text = self.__menu_data_list.currentText()
-        print(text)
-        self.cur = self.getconnection().cursor()
-        self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (text,))
-        value = self.cur.fetchone()
-        
-        self.__transformation_layout.removeItem(self.translated)
-        self.__transformation_layout.removeItem(self.rotated)
-        self.__transformation_layout.removeItem(self.scaled)
-        
-        self.__translated_info.setText(str(value[2])) # translated
-        
-        self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
-        self.__transformation_layout.addLayout(self.translated)
-        self.__transformation_box.setLayout(self.__transformation_layout)
-        
-        self.__central_layout_data.addWidget(self.__transformation_box)
-        self.__group_data_set.setLayout(self.__central_layout_data)
-       
+        currentSelectedItem = self.__menu_data_list.currentText()
+
+        self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (currentSelectedItem,))
+        value = self.cur.fetchone() 
+        self.translate = str(value[2])
+        self.rotate = str(value[3])
+        self.scale = str(value[4])
+        self.category = str(value[5])
+        self.training_count = str(value[6])
+        self.test_image_count = str(value[7])
+        self.total_image_count = str(value[8])
         
         
-        
+        self.__translated_info.setText(self.translate) # translated
+        self.__rotated_info.setText(self.rotate)
+        self.__scaled_info.setText(self.scale)
+        self.__categorie_info.setText(self.category)
+        self.__training_info.setText(self.training_count)
+        self.__test_image_info.setText(self.test_image_count)
+        self.__totale_image_info.setText(self.total_image_count)        
         print(value)
         
+        
+    @Slot()
+    def selected2(self, id):
+        # int
+        self.__categorie_info = self.fill_values("label_count", id)
+        self.__training_info = self.fill_values("training_image_count", id)
+        self.__test_image_info = self.fill_values("test_image_count", id)
+        self.__totale_image_info = self.fill_values("total_image_count", id)
+
+        # String
+        # self.rotated = self.fill_values("rotated", id)
+        # self.translated = self.fill_values("translated", id)
+        # self.scaled = self.fill_values("scaled", id)
+
+    # execute commande SQL pour afficher les infos spécifique 
+    def fill_values(self, col, id):
+        self.cur.execute("SELECT %s FROM klustr.data_set_info WHERE id = %s", (col, id))
+        self.cur.fetchone()
+        return self.cur
         
         
     
