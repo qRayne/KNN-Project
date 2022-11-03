@@ -77,10 +77,10 @@ class myApp(QtWidgets.QMainWindow):
         self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
-        self.category_number = "";
-        self.training_count_number = "";
-        self.test_image_count_number= "";
-        self.total_image_count_number= "";
+        self.category_number = "8";
+        self.training_count_number = "2000";
+        self.test_image_count_number= "2800";
+        self.total_image_count_number= "5600";
         
         self.__categorie_text = 'Category count: '
         self.__training_text = 'Training image count: '
@@ -166,6 +166,7 @@ class myApp(QtWidgets.QMainWindow):
         self.__classify_button_layout = QVBoxLayout()
         self.__classify_button = QtWidgets.QPushButton('Classify')
         self.__classify_button_layout.addWidget(self.__classify_button)
+        self.__classify_button.clicked.connect(self.classifyClicked)
 
         # champ text
         self.__classify_info_layout = QVBoxLayout()
@@ -312,16 +313,37 @@ class myApp(QtWidgets.QMainWindow):
         for i, emp in enumerate(self.cur):
             # print(f'{i:03} | {emp}')
             self.__menu_data_list.addItem(emp[0])
-            self.__menu_single_list.addItem(emp[0])
            
         
-        self.__menu_data_list.currentIndexChanged.connect(self.selected)
-       
+        self.__menu_data_list.currentIndexChanged.connect(self.selectedDataset)
+        self.__menu_data_list.currentIndexChanged.connect(self.single_test_dataset)
+        
+    @Slot()
+    def single_test_dataset(self):
+        currentSelectedItem = self.__menu_data_list.currentText()
+        print(currentSelectedItem)
+        
+        self.cur.execute("SELECT id from klustr.data_set WHERE NAME = %s",(currentSelectedItem,))
+        id = self.cur.fetchone()
+        
+        self.cur.execute("SELECT name from klustr.image where ID IN (select image from klustr.data_set_training where data_set = %s)",(id[0],))
+        list = self.cur.fetchall()
+        
+        for i,item in enumerate(list):
+            self.__menu_single_list.addItem(item[0])
+        
+        print(list)
+        
+    @Slot()
+    def classifyClicked(self):
+        currentSelectedItem = self.__menu_single_list.currentText()
+        self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (currentSelectedItem,))
+         
 
     # prend l'id selectionnée et SELECT la table appropriée
     # tente de remplir les valeurs
     @Slot()
-    def selected(self):
+    def selectedDataset(self):
         currentSelectedItem = self.__menu_data_list.currentText()
 
         self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (currentSelectedItem,))
@@ -341,31 +363,7 @@ class myApp(QtWidgets.QMainWindow):
         self.__categorie_info.setText(self.category)
         self.__training_info.setText(self.training_count)
         self.__test_image_info.setText(self.test_image_count)
-        self.__totale_image_info.setText(self.total_image_count)        
-        print(value)
-        
-        
-    @Slot()
-    def selected2(self, id):
-        # int
-        self.__categorie_info = self.fill_values("label_count", id)
-        self.__training_info = self.fill_values("training_image_count", id)
-        self.__test_image_info = self.fill_values("test_image_count", id)
-        self.__totale_image_info = self.fill_values("total_image_count", id)
-
-        # String
-        # self.rotated = self.fill_values("rotated", id)
-        # self.translated = self.fill_values("translated", id)
-        # self.scaled = self.fill_values("scaled", id)
-
-    # execute commande SQL pour afficher les infos spécifique 
-    def fill_values(self, col, id):
-        self.cur.execute("SELECT %s FROM klustr.data_set_info WHERE id = %s", (col, id))
-        self.cur.fetchone()
-        return self.cur
-        
-        
-    
+        self.__totale_image_info.setText(self.total_image_count)     
     
 
     # execute commande SQL pour afficher les infos spécifique 

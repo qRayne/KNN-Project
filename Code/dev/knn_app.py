@@ -15,7 +15,7 @@ class KNN:
     def __init__(self,dimension,image_test,nb_voisins=3):
        self.__nb_voisins = nb_voisins
        self.__image_test = image_test
-       #self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
+       self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
        self.__data_training = np.empty((0, dimension), dtype=np.float64)  #[x,y,z, image], [x,y,z, image]
        self.__metrique_image_test = np.empty((0,dimension), dtype=np.float64) #[x,y,z]
     
