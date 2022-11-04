@@ -14,7 +14,6 @@ from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
 import psycopg2
 
-
 class MyData:
     
     def __init__(self, size=100):
@@ -73,7 +72,7 @@ class myApp(QtWidgets.QMainWindow):
         self.__menu_data_list = QtWidgets.QComboBox()
         self.__menu_list_data_layout.addWidget(self.__menu_data_list)
         
-        # Dataset - included in dataset
+        ############## Dataset - included in dataset ####################
         self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
@@ -105,23 +104,26 @@ class myApp(QtWidgets.QMainWindow):
         
         self.__included_in_dataset_box.setLayout(self.__included_in_dataset_layout)
        
-        # Dataset - transformation
+        ########### Dataset - transformation ################
         self.__transformation_box = QtWidgets.QGroupBox('Transformation')
         self.__transformation_layout = QVBoxLayout()
 
+        # Texte dans Label
         self.__translated_text = 'Translated: '
         self.__rotated_text = 'Rotated: '
         self.__scaled_text = 'Scaled: '
         
+        # Texte dans les inputs du label
         self.translate = "True";
         self.rotate = "True";
         self.scale = "True";
         
-
+        # init de label
         self.__translated_info = QLabel(self.translate)
         self.__rotated_info = QLabel(self.rotate)
         self.__scaled_info = QLabel(self.scale)
 
+        # Rassemble les Label et les inputs
         self.translated = self.__text_tgt(self.__translated_text, self.__translated_info)
         self.rotated = self.__text_tgt(self.__rotated_text, self.__rotated_info)
         self.scaled = self.__text_tgt(self.__scaled_text, self.__scaled_info)
@@ -152,8 +154,7 @@ class myApp(QtWidgets.QMainWindow):
         self.__image_single_layout = QVBoxLayout()
         self.__single_background_color = QLabel()
         self.__single_background_color.alignment = Qt.AlignCenter
-        self.__single_background_color.setFixedHeight(90)
-        
+        self.__single_background_color.setFixedHeight(90)        
 
         pixmap = QtGui.QPixmap(self.__single_background_color.size())
         pixmap.fill(QtGui.QColor(56, 68, 110))
@@ -317,9 +318,11 @@ class myApp(QtWidgets.QMainWindow):
         
         self.__menu_data_list.currentIndexChanged.connect(self.selectedDataset)
         self.__menu_data_list.currentIndexChanged.connect(self.single_test_dataset)
+        self.__menu_single_list.currentIndexChanged.connect(self.change_tumbnail)
         
     @Slot()
     def single_test_dataset(self):
+        self.__menu_single_list.clear();
         currentSelectedItem = self.__menu_data_list.currentText()
         print(currentSelectedItem)
         
@@ -329,16 +332,27 @@ class myApp(QtWidgets.QMainWindow):
         self.cur.execute("SELECT name from klustr.image where ID IN (select image from klustr.data_set_training where data_set = %s)",(id[0],))
         list = self.cur.fetchall()
         
+        # self.cur.execute("SELECT img_thumbnail from klustr.image where ID IN (select image from klustr.data_set_training where data_set = %s)",(id[0],))
+        # myimage = self.cur.fetchall()
         for i,item in enumerate(list):
             self.__menu_single_list.addItem(item[0])
         
-        print(list)
-        
+
     @Slot()
     def classifyClicked(self):
         currentSelectedItem = self.__menu_single_list.currentText()
         self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (currentSelectedItem,))
-         
+        
+    @Slot()
+    def change_tumbnail(self):
+        value = self.__menu_single_list.currentText()
+        
+        if value != "":
+            self.cur.execute("SELECT img_thumbnail FROM klustr.image WHERE NAME = %s",(value,))
+            data = self.cur.fetchone()
+            qimage = QtGui.QImage.fromData(bytearray(data[0]))
+            pixmap = QtGui.QPixmap.fromImage(qimage)
+            self.__single_background_color.setPixmap(pixmap)
 
     # prend l'id selectionnée et SELECT la table appropriée
     # tente de remplir les valeurs
