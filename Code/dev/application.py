@@ -312,14 +312,8 @@ class myApp(QtWidgets.QMainWindow):
     def update(self,connection):
         self.cur = connection.cursor()
         self.cur.execute("SELECT name FROM klustr.data_set_info;")
-        value = self.cur.fetchone()
-        
-        # value = self.cur.fetchone()
-        # self.valeur = QLabel()
-        # doc = QtGui.QTextDocument()
         
         for i, emp in enumerate(self.cur):
-            # print(f'{i:03} | {emp}')
             self.__menu_data_list.addItem(emp[0])
            
         
@@ -331,7 +325,7 @@ class myApp(QtWidgets.QMainWindow):
     def single_test_dataset(self):
         self.__menu_single_list.clear()
         currentSelectedItem = self.__menu_data_list.currentText()
-        print(currentSelectedItem)
+
         
         self.cur.execute("SELECT id from klustr.data_set WHERE NAME = %s",(currentSelectedItem,))
         id = self.cur.fetchone()
@@ -339,15 +333,12 @@ class myApp(QtWidgets.QMainWindow):
         self.cur.execute("SELECT name from klustr.image where ID IN (select image from klustr.data_set_training where data_set = %s)",(id[0],))
         list = self.cur.fetchall()
         
-        # self.cur.execute("SELECT img_thumbnail from klustr.image where ID IN (select image from klustr.data_set_training where data_set = %s)",(id[0],))
-        # myimage = self.cur.fetchall()
         for i,item in enumerate(list):
             self.__menu_single_list.addItem(item[0])
         
 
     @Slot()
     def classifyClicked(self):
-        # ici on utilisera une fonction du Dao, car plus compliquer de refaire un selectdd
         liste_metrique_test = np.empty((0,3), dtype=np.float64)
         liste_metrique_training = np.empty((0, 3), dtype=np.float64)
         data_set_name = self.__menu_data_list.currentText()
