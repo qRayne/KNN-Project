@@ -3,6 +3,9 @@ from sqlite3 import connect
 import sys
 
 import numpy as np
+from klustr_dao import *
+from db_credential import PostgreSQLCredential
+from knn_app import KNN
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -39,9 +42,9 @@ class ScatterDiagram:
         
         self.__figure = plt.figure(figsize=(5, 5))
         axes = plt.axes( projection='3d')
-        axes.set_xlabel('X-axis', fontweight='bold')
-        axes.set_ylabel('Y-axis', fontweight='bold')
-        axes.set_zlabel('Z-axis', fontweight='bold')
+        axes.set_xlabel('Ratio Complexite', fontweight='bold')
+        axes.set_ylabel('Ratio Circularite', fontweight='bold')
+        axes.set_zlabel('Ratio Distance', fontweight='bold')
         axes.set_title("Graphique de dispersion")
 
         self.__source1 = axes.scatter3D(self.__data1.data[0,:], self.__data1.data[1,:], self.__data1.data[2,:], color='blue', marker="o")
@@ -59,11 +62,16 @@ class ScatterDiagram:
     def widget(self):
         return self.__canvas
     
+    def set_data1(self,data):
+        self.__data1 = data
+        
+    def set_data2(self,data2):
+        self.__data2 = data2
+    
     
 class myApp(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-         
         # ---------------------------- (Dataset) - Global menu--------------------------------#
         self.__group_data_set = QtWidgets.QGroupBox('Dataset')
         
@@ -76,10 +84,10 @@ class myApp(QtWidgets.QMainWindow):
         self.__included_in_dataset_box = QtWidgets.QGroupBox('Included in dataset')
         self.__included_in_dataset_layout = QVBoxLayout()
         
-        self.category_number = "8";
-        self.training_count_number = "2000";
-        self.test_image_count_number= "2800";
-        self.total_image_count_number= "5600";
+        self.category_number = "8"
+        self.training_count_number = "2000"
+        self.test_image_count_number= "2800"
+        self.total_image_count_number= "5600"
         
         self.__categorie_text = 'Category count: '
         self.__training_text = 'Training image count: '
@@ -114,9 +122,9 @@ class myApp(QtWidgets.QMainWindow):
         self.__scaled_text = 'Scaled: '
         
         # Texte dans les inputs du label
-        self.translate = "True";
-        self.rotate = "True";
-        self.scale = "True";
+        self.translate = "True"
+        self.rotate = "True"
+        self.scale = "True"
         
         # init de label
         self.__translated_info = QLabel(self.translate)
@@ -289,8 +297,7 @@ class myApp(QtWidgets.QMainWindow):
     
     def getconnection(self):
         try:
-            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
-    
+            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=admin")
         except psycopg2.Error as e:
             print("Unable to connect!", e.pgerror, e.diag.message_detail)
                 
@@ -322,7 +329,7 @@ class myApp(QtWidgets.QMainWindow):
         
     @Slot()
     def single_test_dataset(self):
-        self.__menu_single_list.clear();
+        self.__menu_single_list.clear()
         currentSelectedItem = self.__menu_data_list.currentText()
         print(currentSelectedItem)
         
@@ -340,8 +347,56 @@ class myApp(QtWidgets.QMainWindow):
 
     @Slot()
     def classifyClicked(self):
-        currentSelectedItem = self.__menu_single_list.currentText()
-        self.cur.execute("SELECT * FROM klustr.data_set_info WHERE NAME = %s", (currentSelectedItem,))
+        # ici on utilisera une fonction du Dao, car plus compliquer de refaire un selectdd
+        liste_metrique_test = np.empty((0,3), dtype=np.float64)
+        liste_metrique_training = np.empty((0, 3), dtype=np.float64)
+        data_set_name = self.__menu_data_list.currentText()
+        current_selected_image = self.__menu_single_list.currentText()
+        
+        # pour recevoir tous les images d'un dataset
+        self.cur.execute("SELECT id from klustr.data_set WHERE NAME = %s",(data_set_name,))
+        id = self.cur.fetchone()
+        self.cur.execute("SELECT img_data from klustr.image where ID IN (select image from klustr.data_set_test where data_set = %s)",(id[0],))
+        listImages = self.cur.fetchall()
+        
+        # pour recevoir l'image qu'on veut tester
+        self.cur.execute("SELECT img_data FROM klustr.image WHERE NAME = %s",(current_selected_image,))
+        imageData = self.cur.fetchone()
+        knn = KNN(3,imageData[0])
+        list_image_numpy = np.asarray(listImages,dtype=object)
+        
+        for i in np.ndenumerate(list_image_numpy):
+            imageBinary = knn.conversion_png_ndarray(i[1])
+            complexite = knn.calcul_complexite(imageBinary)
+            ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+            ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+            liste_metrique_training = np.append(liste_metrique_training,complexite)
+            liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
+            liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
+        
+        knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
+    
+        self.__scatter.set_data1(liste_metrique_training)
+        self.__scatter.set_data2(liste_metrique_training)
+             
+        # pour l'image selectionner
+        imageBinary = knn.conversion_png_ndarray(imageData[0])
+        complexite = knn.calcul_complexite(imageBinary)
+        ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+        ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+        liste_metrique_test = np.append(liste_metrique_test,complexite)
+        liste_metrique_test = np.append(liste_metrique_test,ratio_circularite)
+        liste_metrique_test = np.append(liste_metrique_test,ratio_distance_image)
+        
+        knn.set_metrique_image_test(liste_metrique_test.reshape(-1,3))
+        
+        knn.set_nb_voisins(self.__knn_scrollbar.value)
+        
+        knn.set_distance(knn.calculer_distance_image_test_dataset(
+            knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
+        
+        print(f"la distance la plus proche est de  {knn.distance} soit les {knn.nb_voisins} les plus proches")
+
         
     @Slot()
     def change_tumbnail(self):
@@ -396,12 +451,13 @@ class myApp(QtWidgets.QMainWindow):
           - Prendre le nombre k de voisins, en fait la moyenne et détermine la classe d'image à laquelle l'image test appartient. 
           
         Nos 3 descripteurs de forme sont :
-          - 
-             - 
-          - 
-             - 
-          - 
-             - 
+          - Complexite
+             - correspondant au ratio entre l'aire de la forme / permiètre au carre de la forme
+          - Ratio de Circularite
+             - correspondant au ratio entre le cercle inscrit et le cercle circonscrit
+          - Ratio de Distance
+             - correspondant au ratio entre la distance minimum du centroide à la distance la plus courte
+             - divise par la distance maximum du centroide à la distance la plus longue
              
         Plus précisément, ce laboratoire permet de mettre en pratique les notions de :
           - Matplotlib

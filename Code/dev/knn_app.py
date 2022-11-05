@@ -14,10 +14,10 @@ import math
 class KNN:
     def __init__(self,dimension,image_test,nb_voisins=3):
        self.__nb_voisins = nb_voisins
-       self.__image_test = image_test
        self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
-       self.__data_training = np.empty((0, dimension), dtype=np.float64)  #[x,y,z, image], [x,y,z, image]
        self.__metrique_image_test = np.empty((0,dimension), dtype=np.float64) #[x,y,z]
+       self.__liste_metriques_dataset = np.empty((0, dimension), dtype=np.float64) #[x,y,z, image], [x,y,z, image]
+       self.__distance = 0
     
     @property
     def data_training(self):
@@ -34,7 +34,27 @@ class KNN:
     @property
     def metrique_image_test(self):
          return self.__metrique_image_test
-
+     
+    @property
+    def distance(self):
+        return self.__distance
+    
+    @property
+    def liste_metriques_dataset(self):
+        return self.__liste_metriques_dataset
+    
+    def set_distance(self,distance):
+        self.__distance = distance
+        
+    def set_liste_metriques_dataset(self,liste_metrique_dataset):
+        self.__liste_metriques_dataset = liste_metrique_dataset
+        
+    def set_metrique_image_test(self,metrique_image_test):
+        self.__metrique_image_test = metrique_image_test
+        
+    def set_nb_voisins(self,nb_voisins):
+        self.__nb_voisins = nb_voisins
+ 
     # Conversion png to ndarray
     # prend en paramètre une image.png et la transforme de png->qimage et qimage ->ndarray
     def conversion_png_ndarray(self,dataImage):
@@ -61,81 +81,35 @@ class KNN:
     def calcul_complexite(self,data_image):
         return 1 - ((4 * math.pi) * self.aire_forme(data_image) / self.perimetre_forme(data_image) ** 2)
     
-    def calcul_ratio_image(self,data_image):
+    def calcul_ratio_circularite(self,data_image):
         centroide = self.centroide_forme(data_image)
         arrayCoordonnes = self.trouver_coordonnees_image(data_image)
-        distancePoints = []
-        
-        for point in arrayCoordonnes:
-            distancePoints.append(np.linalg.norm(centroide - point))
-        
-        distancePointsEnNumpy = np.array(distancePoints)
-        # retourne le ratio entre le cercleInscrit / cercleCirconscrit
-        return (math.pi * (np.amin(distancePointsEnNumpy) **2)) /  (math.pi * (np.amax(distancePointsEnNumpy) **2))
-        
-    
+        distancePoints = np.linalg.norm(arrayCoordonnes - centroide, axis=1) # x1000 mieux optimiser que python
+        # # retourne le ratio entre le cercleInscrit / cercleCirconscrit
+        return (math.pi * (np.amin(distancePoints) **2)) /  (math.pi * (np.amax(distancePoints) **2))
+
     def calcul_ratio_distance_image(self,data_image):
         centroide = self.centroide_forme(data_image)
         arrayCoordonnes = self.trouver_coordonnees_image(data_image)
-        distancePoints = []
-        
-        for point in arrayCoordonnes:
-            distancePoints.append(np.linalg.norm(centroide - point))
-        
-        distancePointsEnNumpy = np.array(distancePoints)
+        distancePoints = np.linalg.norm(arrayCoordonnes - centroide, axis=1)
         # retourne le ratio entre la distance min / distance max
-        return np.amin(distancePointsEnNumpy) / np.amax(distancePointsEnNumpy)
-    
-    def ajouter_metriques_image_test(self):
-        nbDim = self.metrique_image_test.shape[1]
-        
-        # si la dimension est de 1 -> une seule metrique (x)
-        # si la dimension est de 2 -> deux  metrique (x,y)
-        # si la dimension est de 3 -> trois  metrique (x,y,z)
-        
-        if nbDim == 1:
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
-        elif nbDim == 2:
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_image(self.__image_test))
-        else:
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_complexite(self.__image_test))
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_image(self.__image_test))
-            self.__metrique_image_test = np.append(self.__metrique_image_test,self.calcul_ratio_distance_image(self.__image_test))
+        return np.amin(distancePoints) / np.amax(distancePoints)
             
-    def calculer_distance_image_test_dataset(self):
-        pass 
-    
+    def calculer_distance_image_test_dataset(self,liste_metriques_dataset,metrique_image_test,nbVoisins):
         
-def main():
-    carre =        [[0,0,0,0,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,0,0,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,0,0],
-                    [0,0,0,0,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,0,0,0,0]]
-    
-    carreNumpy = np.array(carre)
-    carreNumpy.flatten()
-    
-    knn_engine = KNN(3,carreNumpy)
-    knn_engine.ajouter_metriques_image_test()
-
-    print (f" aire du carré : {knn_engine.aire_forme(knn_engine.image_test)}")
-    print (f" permietre du carré : {knn_engine.perimetre_forme(knn_engine.image_test)}")
-    print (f" centroide du carré : {knn_engine.centroide_forme(knn_engine.image_test)}")
-    print (f" complexité du carré : {knn_engine.calcul_complexite(knn_engine.image_test)}")
-    print (f" ratio de circularité du carré : {knn_engine.calcul_ratio_image(knn_engine.image_test)}")
-    print (f" ratio de distance du carré : {knn_engine.calcul_ratio_distance_image(knn_engine.image_test)}")
-    print (f" les metriques de l'image test : { knn_engine.metrique_image_test}")
-
-
-if __name__ == '__main__':
-    main()
+        tableau_distance = np.empty(0)
+        
+        for data in liste_metriques_dataset:
+            x_label = data[0] - metrique_image_test[0,0] # x
+            y_label = data[1] - metrique_image_test[0,1] # y
+            z_label = data[2] - metrique_image_test[0,2] # z
+            
+            # # ici on va calculer la distance à l'aide de la formule donnee
+            distance = (math.pow(x_label,2) + math.pow(y_label,2) + math.pow(z_label,2)) ** 0.5
+            tableau_distance = np.append(tableau_distance,distance)
+        
+        # retourne 1,2 ou 3 distances selon le nbVoisins
+        result = np.argpartition(tableau_distance,nbVoisins)
+        return tableau_distance[result[:nbVoisins]]
     
 
