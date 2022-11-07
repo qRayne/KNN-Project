@@ -179,8 +179,8 @@ class myApp(QtWidgets.QMainWindow):
 
         # champ text
         self.__classify_info_layout = QVBoxLayout()
-
-        self.__classify_info = QLabel('star_5_050')
+        self.classify = "not classified"
+        self.__classify_info = QLabel(self.classify)
         self.__classify_info.alignment = Qt.AlignCenter 
         self.__classify_info_layout.addWidget(self.__classify_info)
 
@@ -297,7 +297,7 @@ class myApp(QtWidgets.QMainWindow):
     
     def getconnection(self):
         try:
-            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=admin")
+            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
         except psycopg2.Error as e:
             print("Unable to connect!", e.pgerror, e.diag.message_detail)
                 
@@ -345,9 +345,9 @@ class myApp(QtWidgets.QMainWindow):
         current_selected_image = self.__menu_single_list.currentText()
         
         # pour recevoir tous les images d'un dataset
-        self.cur.execute("SELECT id from klustr.data_set WHERE NAME = %s",(data_set_name,))
+        self.cur.execute("SELECT id FROM klustr.data_set WHERE NAME = %s",(data_set_name,))
         id = self.cur.fetchone()
-        self.cur.execute("SELECT img_data from klustr.image where ID IN (select image from klustr.data_set_test where data_set = %s)",(id[0],))
+        self.cur.execute("SELECT img_data,name FROM klustr.image WHERE ID IN (SELECT image FROM klustr.data_set_training WHERE data_set = %s)",(id[0],))
         listImages = self.cur.fetchall()
         
         # pour recevoir l'image qu'on veut tester
@@ -357,36 +357,37 @@ class myApp(QtWidgets.QMainWindow):
         list_image_numpy = np.asarray(listImages,dtype=object)
         
         for i in np.ndenumerate(list_image_numpy):
-            imageBinary = knn.conversion_png_ndarray(i[1])
-            complexite = knn.calcul_complexite(imageBinary)
-            ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
-            ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
-            liste_metrique_training = np.append(liste_metrique_training,complexite)
-            liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
-            liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
-        
-        knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
+            print(i[0][1])
+        #     imageBinary = knn.conversion_png_ndarray(i[1])
+        #     complexite = knn.calcul_complexite(imageBinary)
+        #     ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+        #     ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+        #     liste_metrique_training = np.append(liste_metrique_training,complexite)
+        #     liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
+        #     liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
     
-        self.__scatter.set_data1(liste_metrique_training)
-        self.__scatter.set_data2(liste_metrique_training)
-             
-        # pour l'image selectionner
-        imageBinary = knn.conversion_png_ndarray(imageData[0])
-        complexite = knn.calcul_complexite(imageBinary)
-        ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
-        ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
-        liste_metrique_test = np.append(liste_metrique_test,complexite)
-        liste_metrique_test = np.append(liste_metrique_test,ratio_circularite)
-        liste_metrique_test = np.append(liste_metrique_test,ratio_distance_image)
-        
-        knn.set_metrique_image_test(liste_metrique_test.reshape(-1,3))
-        
-        knn.set_nb_voisins(self.__knn_scrollbar.value)
-        
-        knn.set_distance(knn.calculer_distance_image_test_dataset(
-            knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
-        
-        print(f"la distance la plus proche est de  {knn.distance} soit les {knn.nb_voisins} les plus proches")
+        # knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
+    
+        # self.__scatter.set_data1(liste_metrique_training)
+        # self.__scatter.set_data2(liste_metrique_training)
+           
+        # # pour l'image selectionner
+        # imageBinary = knn.conversion_png_ndarray(imageData[0])
+        # complexite = knn.calcul_complexite(imageBinary)
+        # ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+        # ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+        # liste_metrique_test = np.append(liste_metrique_test,complexite)
+        # liste_metrique_test = np.append(liste_metrique_test,ratio_circularite)
+        # liste_metrique_test = np.append(liste_metrique_test,ratio_distance_image)
+    
+        # knn.set_metrique_image_test(liste_metrique_test.reshape(-1,3))
+    
+        # knn.set_nb_voisins(self.__knn_scrollbar.value)
+    
+        # knn.set_distance(knn.calculer_distance_image_test_dataset(
+        #     knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
+    
+        # print(f"la distance la plus proche est de  {knn.distance} soit les {knn.nb_voisins} voisins les plus proches")
 
         
     @Slot()
@@ -454,7 +455,12 @@ class myApp(QtWidgets.QMainWindow):
           - Matplotlib
           - Numpy
           - DataBase(pgAdmin - posgresql)
-          - PyQt_Pyside6 """
+          - PyQt_Pyside6 
+          
+        Un effort d'abstraction a été fait pour ces points:
+          - Trouver le troisième descripteur de forme 
+          - Trouver un moyen d'optimiser le KNN sans aucune itération avec une for loop
+          """
         QtWidgets.QMessageBox.about(self,"KlustR KNN Classifier", about_text)
             
 def main():
