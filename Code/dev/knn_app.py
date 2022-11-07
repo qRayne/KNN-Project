@@ -100,15 +100,15 @@ class KNN:
         tableau_distance = np.empty(0)
         
         for data in liste_metriques_dataset:
-            x_label = data[0] - metrique_image_test[0,0] # x
-            y_label = data[1] - metrique_image_test[0,1] # y
-            z_label = data[2] - metrique_image_test[0,2] # z
-            
-            # # ici on va calculer la distance à l'aide de la formule donnee
+            x_label = float(data[0]) - metrique_image_test[0,0] # x
+            y_label = float(data[1]) - metrique_image_test[0,1] # y
+            z_label = float(data[2]) - metrique_image_test[0,2] # z
+
+            #ici on va calculer la distance à l'aide de la formule donnee
             distance = (math.pow(x_label,2) + math.pow(y_label,2) + math.pow(z_label,2)) ** 0.5
             tableau_distance = np.append(tableau_distance,distance)
-        
-        # retourne 1,2 ou 3 distances selon le nbVoisins
+
+        # # retourne 1,2 ou 3 distances selon le nbVoisins
         result = np.argpartition(tableau_distance,nbVoisins)
         return tableau_distance[result[:nbVoisins]]
     

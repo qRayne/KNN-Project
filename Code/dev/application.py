@@ -4,8 +4,8 @@ import sys
 
 import numpy as np
 from klustr_dao import *
-from db_credential import PostgreSQLCredential
 from knn_app import KNN
+from db_credential import PostgreSQLCredential
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -340,54 +340,48 @@ class myApp(QtWidgets.QMainWindow):
     @Slot()
     def classifyClicked(self):
         liste_metrique_test = np.empty((0,3), dtype=np.float64)
-        liste_metrique_training = np.empty((0, 3), dtype=np.float64)
+        liste_metrique_training = np.empty((0, 4), dtype=np.float64)
         data_set_name = self.__menu_data_list.currentText()
         current_selected_image = self.__menu_single_list.currentText()
         
         # pour recevoir tous les images d'un dataset
         self.cur.execute("SELECT id FROM klustr.data_set WHERE NAME = %s",(data_set_name,))
         id = self.cur.fetchone()
-        self.cur.execute("SELECT img_data,name FROM klustr.image WHERE ID IN (SELECT image FROM klustr.data_set_training WHERE data_set = %s)",(id[0],))
+        self.cur.execute("SELECT img_data,name FROM klustr.image WHERE ID IN (SELECT image FROM klustr.data_set_test WHERE data_set = %s)",(id[0],))
         listImages = self.cur.fetchall()
-        
-        # pour recevoir l'image qu'on veut tester
+
         self.cur.execute("SELECT img_data FROM klustr.image WHERE NAME = %s",(current_selected_image,))
         imageData = self.cur.fetchone()
         knn = KNN(3,imageData[0])
-        list_image_numpy = np.asarray(listImages,dtype=object)
         
-        for i in np.ndenumerate(list_image_numpy):
-            print(i[0][1])
-        #     imageBinary = knn.conversion_png_ndarray(i[1])
-        #     complexite = knn.calcul_complexite(imageBinary)
-        #     ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
-        #     ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
-        #     liste_metrique_training = np.append(liste_metrique_training,complexite)
-        #     liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
-        #     liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
+        for i in listImages:
+            imageBinary = knn.conversion_png_ndarray(i[0])
+            complexite = knn.calcul_complexite(imageBinary)
+            ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+            ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+            liste_metrique_training = np.append(liste_metrique_training,complexite)
+            liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
+            liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
+            liste_metrique_training = np.append(liste_metrique_training,i[1])
+            
+        knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,4))
+        
+        imageBinary = knn.conversion_png_ndarray(imageData[0])
+        complexite = knn.calcul_complexite(imageBinary)
+        ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
+        ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
+        liste_metrique_test = np.append(liste_metrique_test,complexite)
+        liste_metrique_test = np.append(liste_metrique_test,ratio_circularite)
+        liste_metrique_test = np.append(liste_metrique_test,ratio_distance_image)
     
-        # knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
+        knn.set_metrique_image_test(liste_metrique_test.reshape(-1,3))
     
-        # self.__scatter.set_data1(liste_metrique_training)
-        # self.__scatter.set_data2(liste_metrique_training)
-           
-        # # pour l'image selectionner
-        # imageBinary = knn.conversion_png_ndarray(imageData[0])
-        # complexite = knn.calcul_complexite(imageBinary)
-        # ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
-        # ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
-        # liste_metrique_test = np.append(liste_metrique_test,complexite)
-        # liste_metrique_test = np.append(liste_metrique_test,ratio_circularite)
-        # liste_metrique_test = np.append(liste_metrique_test,ratio_distance_image)
+        knn.set_nb_voisins(self.__knn_scrollbar.value)
     
-        # knn.set_metrique_image_test(liste_metrique_test.reshape(-1,3))
+        knn.set_distance(knn.calculer_distance_image_test_dataset(
+            knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
     
-        # knn.set_nb_voisins(self.__knn_scrollbar.value)
-    
-        # knn.set_distance(knn.calculer_distance_image_test_dataset(
-        #     knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
-    
-        # print(f"la distance la plus proche est de  {knn.distance} soit les {knn.nb_voisins} voisins les plus proches")
+        print(f"la/les distances les plus proche sont {knn.distance} soit les {knn.nb_voisins} voisins les plus proches")
 
         
     @Slot()
