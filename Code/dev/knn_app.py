@@ -16,7 +16,7 @@ class KNN:
        self.__nb_voisins = nb_voisins
        self.__image_test = self.conversion_png_ndarray(image_test) # on converti l'image qu'on a 
        self.__metrique_image_test = np.empty((0,dimension), dtype=np.float64) #[x,y,z]
-       self.__liste_metriques_dataset = np.empty((0, dimension), dtype=np.float64) #[x,y,z, image], [x,y,z, image]
+       self.__liste_metriques_dataset = np.empty((0, dimension), dtype=np.float64) #[x,y,z], [x,y,z]
        self.__distance = 0
     
     @property
@@ -66,6 +66,7 @@ class KNN:
         return np.sum(np.count_nonzero(data_image))
     
     def trouver_coordonnees_image(self,data_image):
+        # on recupère en [x,y] chaque point qui contient 1 (soit un pixel qui est dessiner)
         return np.argwhere(data_image == 1)
     
     def perimetre_forme(self,data_image):
@@ -84,15 +85,18 @@ class KNN:
     def calcul_ratio_circularite(self,data_image):
         centroide = self.centroide_forme(data_image)
         arrayCoordonnes = self.trouver_coordonnees_image(data_image)
-        distancePoints = np.linalg.norm(arrayCoordonnes - centroide, axis=1) # x1000 mieux optimiser que python
-        # # retourne le ratio entre le cercleInscrit / cercleCirconscrit
+        # ici au lieu de faire une for loop afin de calculer chaque point sa distance
+        # on calcule dans une matrice chaque point -> le calcul devient beaucoup plus rapide
+        distancePoints = np.linalg.norm(arrayCoordonnes - centroide, axis=1)
+        # retourne le ratio entre le cercleInscrit / cercleCirconscrit
         return (math.pi * (np.amin(distancePoints) **2)) /  (math.pi * (np.amax(distancePoints) **2))
 
     def calcul_ratio_distance_image(self,data_image):
         centroide = self.centroide_forme(data_image)
         arrayCoordonnes = self.trouver_coordonnees_image(data_image)
+        # ici au lieu de faire une for loop afin de calculer chaque point sa distance
+        # on calcule dans une matrice chaque point -> le calcul devient beaucoup plus rapide
         distancePoints = np.linalg.norm(arrayCoordonnes - centroide, axis=1)
-        # retourne le ratio entre la distance min / distance max
         return np.amin(distancePoints) / np.amax(distancePoints)
             
     def calculer_distance_image_test_dataset(self,liste_metriques_dataset,metrique_image_test,nbVoisins):

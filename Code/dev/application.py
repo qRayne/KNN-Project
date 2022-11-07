@@ -297,7 +297,8 @@ class myApp(QtWidgets.QMainWindow):
     
     def getconnection(self):
         try:
-            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=AAAaaa123")
+            #AAAaaa123
+            connection = psycopg2.connect("dbname=postgres user=postgres port=5432 password=admin")
         except psycopg2.Error as e:
             print("Unable to connect!", e.pgerror, e.diag.message_detail)
                 
@@ -320,7 +321,8 @@ class myApp(QtWidgets.QMainWindow):
         self.__menu_data_list.currentIndexChanged.connect(self.selectedDataset)
         self.__menu_data_list.currentIndexChanged.connect(self.single_test_dataset)
         self.__menu_single_list.currentIndexChanged.connect(self.change_tumbnail)
-        
+    
+    # on affiche le tous les image lier au dataset dans le menu single list
     @Slot()
     def single_test_dataset(self):
         self.__menu_single_list.clear()
@@ -350,21 +352,21 @@ class myApp(QtWidgets.QMainWindow):
         self.cur.execute("SELECT img_data,name FROM klustr.image WHERE ID IN (SELECT image FROM klustr.data_set_test WHERE data_set = %s)",(id[0],))
         listImages = self.cur.fetchall()
 
+        # on recupère l'image qu'on veut tester
         self.cur.execute("SELECT img_data FROM klustr.image WHERE NAME = %s",(current_selected_image,))
         imageData = self.cur.fetchone()
         knn = KNN(3,imageData[0])
         
-        for i in listImages:
-            imageBinary = knn.conversion_png_ndarray(i[0])
+        for image in listImages:
+            imageBinary = knn.conversion_png_ndarray(image[0])
             complexite = knn.calcul_complexite(imageBinary)
             ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
             ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
             liste_metrique_training = np.append(liste_metrique_training,complexite)
             liste_metrique_training = np.append(liste_metrique_training,ratio_circularite)
             liste_metrique_training = np.append(liste_metrique_training,ratio_distance_image)
-            liste_metrique_training = np.append(liste_metrique_training,i[1])
             
-        knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,4))
+        knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
         
         imageBinary = knn.conversion_png_ndarray(imageData[0])
         complexite = knn.calcul_complexite(imageBinary)
@@ -382,8 +384,12 @@ class myApp(QtWidgets.QMainWindow):
             knn.liste_metriques_dataset,knn.metrique_image_test,knn.nb_voisins))
     
         print(f"la/les distances les plus proche sont {knn.distance} soit les {knn.nb_voisins} voisins les plus proches")
-
         
+        # on arrive à calculer les voisins les plus proches avec les distances
+        # le problème est de savoir qu'elle est le nom de ou les images correspondants à ces voisins
+        # aussi le graphique ne se met pas à jour
+
+    # changer le tumbnail du text
     @Slot()
     def change_tumbnail(self):
         value = self.__menu_single_list.currentText()
@@ -395,8 +401,7 @@ class myApp(QtWidgets.QMainWindow):
             pixmap = QtGui.QPixmap.fromImage(qimage)
             self.__single_background_color.setPixmap(pixmap)
 
-    # prend l'id selectionnée et SELECT la table appropriée
-    # tente de remplir les valeurs
+    # afficher les donnes relative au data_set selectionner
     @Slot()
     def selectedDataset(self):
         currentSelectedItem = self.__menu_data_list.currentText()
@@ -452,8 +457,8 @@ class myApp(QtWidgets.QMainWindow):
           - PyQt_Pyside6 
           
         Un effort d'abstraction a été fait pour ces points:
-          - Trouver le troisième descripteur de forme 
-          - Trouver un moyen d'optimiser le KNN sans aucune itération avec une for loop
+          - Trouver le second descripteur de forme 
+          - Trouver un moyen d'optimiser le KNN sans aucune utilisation de for loop (python)
           """
         QtWidgets.QMessageBox.about(self,"KlustR KNN Classifier", about_text)
             
