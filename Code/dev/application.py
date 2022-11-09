@@ -368,7 +368,7 @@ class myApp(QtWidgets.QMainWindow):
             
         knn.set_liste_metriques_dataset(liste_metrique_training.reshape(-1,3))
         
-        imageBinary = knn.conversion_png_ndarray(imageData[0])
+        imageBinary = knn.conversion_png_ndarray(knn.image_test)
         complexite = knn.calcul_complexite(imageBinary)
         ratio_circularite = knn.calcul_ratio_circularite(imageBinary)
         ratio_distance_image = knn.calcul_ratio_distance_image(imageBinary)
